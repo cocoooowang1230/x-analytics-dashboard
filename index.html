@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XPulse Analytics — X/Twitter 數據觀測平台</title>
+  <meta name="description" content="CMO 級別的 X/Twitter 帳號數據分析平台，完整追蹤 Followers、Posts、Likes、Retweets 互動成長">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </div>
+      <span class="logo-text">XPulse</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">主要功能</div>
+    <a href="#" class="nav-item active" data-view="overview" onclick="switchView('overview'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>總覽儀表板</span>
+    </a>
+    <a href="#" class="nav-item" data-view="growth" onclick="switchView('growth'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      <span>粉絲成長</span>
+    </a>
+    <a href="#" class="nav-item" data-view="engagement" onclick="switchView('engagement'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span>互動分析</span>
+    </a>
+    <a href="#" class="nav-item" data-view="content" onclick="switchView('content'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>貼文表現</span>
+    </a>
+    <a href="#" class="nav-item" data-view="audience" onclick="switchView('audience'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>受眾洞察</span>
+    </a>
+    <a href="#" class="nav-item" data-view="competitor" onclick="switchView('competitor'); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      <span>競品比較</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:24px">工具</div>
+    <a href="#" class="nav-item" onclick="openSettings(); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>帳號設定</span>
+    </a>
+    <a href="#" class="nav-item" onclick="exportData(); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>匯出報表</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-account">
+    <div class="account-avatar">CMO</div>
+    <div class="account-info">
+      <div class="account-name">@YourBrand</div>
+      <div class="account-plan"><span class="live-dot"></span>Pro Plan · 即時</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<main class="main-content">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="page-title-group">
+        <h1 id="pageTitle">總覽儀表板</h1>
+        <span class="last-updated">最後更新：<span id="lastUpdated">—</span></span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="date-range-picker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <select id="dateRange" onchange="updateDateRange(this.value)">
+          <option value="7">近 7 天</option>
+          <option value="30" selected>近 30 天</option>
+          <option value="90">近 90 天</option>
+        </select>
+      </div>
+      <button class="btn-export" onclick="exportData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        匯出報表
+      </button>
+      <button class="btn-refresh" onclick="refreshData()" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- VIEWS -->
+  <div class="view-container">
+
+    <!-- ══════════ OVERVIEW VIEW ══════════ -->
+    <div id="view-overview" class="view active">
+
+      <!-- 8 KPI Cards -->
+      <div class="kpi-grid-8">
+
+        <!-- 1. Followers -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">粉絲總數 Followers</span>
+            <div class="kpi-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-followers-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+3.2% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkFollowers"></canvas></div>
+        </div>
+
+        <!-- 2. Posts -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">貼文數 Posts</span>
+            <div class="kpi-icon icon-amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-posts-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+8.4% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkPosts"></canvas></div>
+        </div>
+
+        <!-- 3. Likes -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">按讚數 Likes</span>
+            <div class="kpi-icon icon-red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-likes-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+31.2% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkLikes"></canvas></div>
+        </div>
+
+        <!-- 4. Retweets -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">轉推數 Retweets</span>
+            <div class="kpi-icon icon-cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-retweets-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+14.7% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkRetweets"></canvas></div>
+        </div>
+
+        <!-- 5. Replies -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">回覆數 Replies</span>
+            <div class="kpi-icon icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-replies-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+19.3% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkReplies"></canvas></div>
+        </div>
+
+        <!-- 6. Bookmarks -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">書籤數 Bookmarks</span>
+            <div class="kpi-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-bookmarks-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+9.8% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkBookmarks"></canvas></div>
+        </div>
+
+        <!-- 7. Impressions -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">曝光次數 Impressions</span>
+            <div class="kpi-icon icon-pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-impressions-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>+18.5% 較上期</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkImpressions"></canvas></div>
+        </div>
+
+        <!-- 8. Engagement Rate -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">互動率 Eng. Rate</span>
+            <div class="kpi-icon icon-indigo" style="background:rgba(129,140,248,0.15);color:#818cf8">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpi-engrate-val">—</div>
+          <div class="kpi-delta positive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span>行業均值 2.1x</span>
+          </div>
+          <div class="kpi-sparkline"><canvas id="sparkEngRate"></canvas></div>
+        </div>
+
+      </div><!-- /kpi-grid-8 -->
+
+      <!-- Follower Growth + Engagement Donut -->
+      <div class="charts-row">
+        <div class="chart-card chart-large">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">粉絲成長趨勢</h3>
+              <p class="chart-subtitle">每日粉絲數量與新增粉絲變化</p>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>粉絲總數</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span>新增粉絲</span>
+            </div>
+          </div>
+          <div class="chart-body" style="height:240px">
+            <canvas id="followerGrowthChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">互動類型分布</h3>
+              <p class="chart-subtitle">Likes · Retweets · Replies · Bookmarks</p>
+            </div>
+          </div>
+          <div class="chart-body donut-container" style="height:190px">
+            <canvas id="engagementDonut"></canvas>
+            <div class="donut-center">
+              <span class="donut-total" id="donutTotal">—</span>
+              <span class="donut-label">總互動</span>
+            </div>
+          </div>
+          <div class="donut-legend" id="donutLegend">
+            <div class="donut-legend-item"><span style="background:#f43f5e"></span><span>按讚</span><strong id="dl-likes">—</strong></div>
+            <div class="donut-legend-item"><span style="background:#06b6d4"></span><span>轉推</span><strong id="dl-rt">—</strong></div>
+            <div class="donut-legend-item"><span style="background:#8b5cf6"></span><span>回覆</span><strong id="dl-re">—</strong></div>
+            <div class="donut-legend-item"><span style="background:#10b981"></span><span>書籤</span><strong id="dl-bk">—</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Likes + Retweets Trend -->
+      <div class="charts-row">
+        <div class="chart-card chart-large">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">Likes & Retweets 每日趨勢</h3>
+              <p class="chart-subtitle">按讚與轉推日變化對比</p>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:#f43f5e"></span>Likes</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span>Retweets</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>Replies</span>
+            </div>
+          </div>
+          <div class="chart-body" style="height:220px">
+            <canvas id="likeRtChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">貼文表現排行</h3>
+              <p class="chart-subtitle">本期最高互動推文</p>
+            </div>
+          </div>
+          <div class="chart-body" style="height:280px;overflow-y:auto">
+            <div class="top-posts" id="topPostsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heatmap + Best Time -->
+      <div class="charts-row">
+        <div class="chart-card chart-large">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">每週互動熱力圖</h3>
+              <p class="chart-subtitle">各時段互動強度（深色 = 高互動）</p>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="heatmap-container" id="heatmapContainer"></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">最佳發文時段</h3>
+              <p class="chart-subtitle">各時段平均互動率</p>
+            </div>
+          </div>
+          <div class="chart-body" style="height:240px">
+            <canvas id="bestTimeChart2"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /view-overview -->
+
+    <!-- ══════════ GROWTH VIEW ══════════ -->
+    <div id="view-growth" class="view">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">淨增粉絲</span><div class="kpi-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div><div class="kpi-value" id="kpi-netgain-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+12.4% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">日均成長</span><div class="kpi-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg></div></div><div class="kpi-value" id="kpi-dayavg-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+8.3% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">粉絲流失</span><div class="kpi-icon icon-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div><div class="kpi-value" id="kpi-lost-val">—</div><div class="kpi-delta negative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg><span>+5.1% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">成長率</span><div class="kpi-icon icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div></div><div class="kpi-value" id="kpi-growrate-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+0.21% 較上期</span></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card chart-large"><div class="chart-header"><div><h3 class="chart-title">粉絲成長詳細分析</h3><p class="chart-subtitle">新增 vs 流失粉絲趨勢</p></div></div><div class="chart-body" style="height:240px"><canvas id="growthDetailChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">成長來源</h3><p class="chart-subtitle">粉絲獲取管道</p></div></div><div class="chart-body donut-container" style="height:200px"><canvas id="growthSourceDonut"></canvas><div class="donut-center"><span class="donut-total" id="growthTotal">—</span><span class="donut-label">新增</span></div></div><div class="donut-legend"><div class="donut-legend-item"><span style="background:#6366f1"></span><span>自然增長</span><strong>50%</strong></div><div class="donut-legend-item"><span style="background:#06b6d4"></span><span>病毒傳播</span><strong>28%</strong></div><div class="donut-legend-item"><span style="background:#8b5cf6"></span><span>廣告引流</span><strong>15%</strong></div><div class="donut-legend-item"><span style="background:#10b981"></span><span>合作推薦</span><strong>7%</strong></div></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">週成長率趨勢</h3><p class="chart-subtitle">每週粉絲成長率</p></div></div><div class="chart-body" style="height:220px"><canvas id="weeklyGrowthChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">里程碑追蹤</h3><p class="chart-subtitle">粉絲數量里程碑進度</p></div></div><div class="chart-body" style="height:220px;overflow-y:auto"><div class="milestones-list" id="milestonesList"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════ ENGAGEMENT VIEW ══════════ -->
+    <div id="view-engagement" class="view">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">總按讚 Likes</span><div class="kpi-icon icon-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div></div><div class="kpi-value" id="kpi-el-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+31.2% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">總轉推 Retweets</span><div class="kpi-icon icon-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div></div><div class="kpi-value" id="kpi-ert-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+14.7% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">總回覆 Replies</span><div class="kpi-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div></div><div class="kpi-value" id="kpi-erp-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>+19.3% 較上期</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">平均互動率</span><div class="kpi-icon icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div></div><div class="kpi-value" id="kpi-eerp-val">—</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>行業均值 2.1x</span></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card chart-large"><div class="chart-header"><div><h3 class="chart-title">Likes & Retweets & Replies 趨勢</h3><p class="chart-subtitle">每日互動數量變化</p></div></div><div class="chart-body" style="height:240px"><canvas id="engagementTrendChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">最佳發文時段</h3><p class="chart-subtitle">各時段平均互動率</p></div></div><div class="chart-body" style="height:240px"><canvas id="bestTimeChart"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">互動率日趨勢</h3><p class="chart-subtitle">每日互動率變化</p></div></div><div class="chart-body" style="height:220px"><canvas id="engRateWeekChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">內容格式互動比較</h3><p class="chart-subtitle">不同類型貼文互動率</p></div></div><div class="chart-body" style="height:220px"><canvas id="contentTypeEngChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════ CONTENT VIEW ══════════ -->
+    <div id="view-content" class="view">
+      <div class="content-view-header">
+        <h2>貼文表現分析</h2>
+        <div class="content-filters">
+          <button class="filter-btn active" onclick="filterContent('all',this)">全部</button>
+          <button class="filter-btn" onclick="filterContent('text',this)">文字</button>
+          <button class="filter-btn" onclick="filterContent('media',this)">媒體</button>
+          <button class="filter-btn" onclick="filterContent('thread',this)">串文</button>
+        </div>
+      </div>
+      <div class="tweets-table-wrap">
+        <table class="tweets-table" id="tweetsTable">
+          <thead>
+            <tr>
+              <th>貼文內容</th>
+              <th class="sortable" onclick="sortTable('date')">發布時間 ↕</th>
+              <th class="sortable" onclick="sortTable('impressions')">曝光 ↕</th>
+              <th class="sortable" onclick="sortTable('likes')">❤️ Likes ↕</th>
+              <th class="sortable" onclick="sortTable('retweets')">🔁 Retweets ↕</th>
+              <th class="sortable" onclick="sortTable('replies')">💬 Replies ↕</th>
+              <th class="sortable" onclick="sortTable('er')">互動率 ↕</th>
+              <th>類型</th>
+            </tr>
+          </thead>
+          <tbody id="tweetsTableBody"></tbody>
+        </table>
+      </div>
+      <div class="charts-row" style="margin-top:24px">
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">每日發文頻率</h3><p class="chart-subtitle">Posts per Day</p></div></div><div class="chart-body" style="height:200px"><canvas id="postFreqChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">熱門標籤互動率</h3><p class="chart-subtitle">Top Hashtag 表現</p></div></div><div class="chart-body" style="height:200px"><canvas id="hashtagChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════ AUDIENCE VIEW ══════════ -->
+    <div id="view-audience" class="view">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">高品質粉絲佔比</span><div class="kpi-icon icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div></div><div class="kpi-value">68.3%</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>高品質帳號比例</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">粉絲平均追蹤數</span><div class="kpi-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="kpi-value">1,247</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>高影響力粉絲群</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">主要語言</span><div class="kpi-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div></div><div class="kpi-value">繁中</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>佔 42.3% 粉絲</span></div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">主要地區</span><div class="kpi-icon icon-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div></div><div class="kpi-value">台灣</div><div class="kpi-delta positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg><span>佔 38.7% 粉絲</span></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">受眾地理分布</h3><p class="chart-subtitle">前 10 地區粉絲比例</p></div></div><div class="chart-body" style="height:260px"><canvas id="geoChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">語言分布</h3><p class="chart-subtitle">粉絲使用語言比例</p></div></div><div class="chart-body donut-container" style="height:190px"><canvas id="langDonut"></canvas><div class="donut-center"><span class="donut-total">128K</span><span class="donut-label">粉絲</span></div></div><div class="donut-legend"><div class="donut-legend-item"><span style="background:#6366f1"></span><span>繁中</span><strong>42.3%</strong></div><div class="donut-legend-item"><span style="background:#06b6d4"></span><span>英文</span><strong>28.7%</strong></div><div class="donut-legend-item"><span style="background:#8b5cf6"></span><span>簡中</span><strong>15.2%</strong></div><div class="donut-legend-item"><span style="background:#10b981"></span><span>日文</span><strong>8.4%</strong></div></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">粉絲活躍時間</h3><p class="chart-subtitle">粉絲在線時段分布</p></div></div><div class="chart-body" style="height:220px"><canvas id="audienceActiveChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">受眾興趣分類</h3><p class="chart-subtitle">粉絲興趣標籤分布</p></div></div><div class="chart-body" style="height:220px"><canvas id="interestChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════ COMPETITOR VIEW ══════════ -->
+    <div id="view-competitor" class="view">
+      <div class="competitor-header-row">
+        <h2>競品帳號比較</h2>
+        <button class="btn-add-competitor" onclick="addCompetitor()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增競品
+        </button>
+      </div>
+      <div class="competitor-cards" id="competitorCards"></div>
+      <div class="charts-row">
+        <div class="chart-card chart-large"><div class="chart-header"><div><h3 class="chart-title">粉絲數量比較</h3><p class="chart-subtitle">競品帳號粉絲成長對比</p></div></div><div class="chart-body" style="height:240px"><canvas id="competitorFollowersChart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-header"><div><h3 class="chart-title">互動率排名</h3><p class="chart-subtitle">各帳號互動率比較</p></div></div><div class="chart-body" style="height:240px"><canvas id="competitorEngChart"></canvas></div></div>
+      </div>
+      <div class="chart-card" style="margin-top:0">
+        <div class="chart-header"><div><h3 class="chart-title">綜合競爭力雷達</h3><p class="chart-subtitle">多維度競品對比分析</p></div></div>
+        <div class="chart-body" style="display:flex;justify-content:center;height:320px">
+          <canvas id="radarChart" style="max-width:420px"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /view-container -->
+</main>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>帳號設定</h3>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>監測帳號</label>
+        <input type="text" id="accountInput" placeholder="@YourBrand" value="@YourBrand">
+      </div>
+      <div class="form-group">
+        <label>X API Bearer Token</label>
+        <input type="password" id="apiKeyInput" placeholder="輸入 Bearer Token 連接真實數據">
+      </div>
+      <div class="form-group">
+        <label>自動刷新頻率</label>
+        <select id="refreshInterval">
+          <option value="300">每 5 分鐘</option>
+          <option value="900" selected>每 15 分鐘</option>
+          <option value="1800">每 30 分鐘</option>
+          <option value="3600">每小時</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>通知設定</label>
+        <div class="toggle-group">
+          <label class="toggle-label"><input type="checkbox" checked> 粉絲里程碑通知</label>
+          <label class="toggle-label"><input type="checkbox" checked> 互動率異常警告</label>
+          <label class="toggle-label"><input type="checkbox"> 每日報告郵件</label>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveSettings()">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
