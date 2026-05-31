@@ -440,6 +440,31 @@
       </div>
     </div>
 
+    <!-- DAILY DELTA + GROWTH CHART (real, from data.json history) -->
+    <div class="section-title" style="margin-top:6px">
+      <span>粉絲成長紀錄</span>
+      <span class="badge badge-real">✅ 真實歷史數據</span>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">昨日 vs 今日</div>
+      <div id="deltaRow" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+        <span style="color:var(--muted);font-size:13px">數據累積中…明天起顯示每日變化</span>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+        Followers 歷史成長圖（每天 GitHub Actions 自動更新一筆）
+      </div>
+      <div id="growthChartWrap" style="height:180px;position:relative">
+        <canvas id="growthChart"></canvas>
+      </div>
+      <div style="font-size:11px;color:var(--faint);margin-top:10px">
+        📌 圖表資料來自 <code style="background:var(--elevated);padding:1px 5px;border-radius:4px">data.json</code>，由 GitHub Actions 每天早上 08:00（台灣時間）自動抓取更新
+      </div>
+    </div>
+
     <!-- SECTIONS REQUIRING API -->
     <div class="section-title">
       <span>以下數據目前無法取得（需要 API）</span>
@@ -506,54 +531,177 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  // ── REAL DATA ──────────────────────────────────────────
-  const REAL = {
-    followers: 59717,
-    following:  15,
-    posts:      150,
-    media:      47,
-    listed:     25,
-    created:    new Date('2023-03-19'),
+  Chart.defaults.color = '#8891b2';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+  let globalData = null;
+  let growthChart = null;
+
+  // ── 從 data.json 載入（GitHub Actions 每天更新）──────────
+  async function loadData() {
+    try {
+      const res = await fetch('data.json?t=' + Date.now());
+      if (!res.ok) throw new Error('無法載入 data.json');
+      globalData = await res.json();
+      renderAll(globalData);
+    } catch (err) {
+      console.error('載入失敗，使用備用數據:', err);
+      // fallback to hardcoded if fetch fails (e.g., local file://)
+      globalData = FALLBACK;
+      renderAll(globalData);
+    }
+  }
+
+  // ── 備用數據（當 fetch 失敗時使用）──────────────────────
+  const FALLBACK = {
+    name: 'My AI PET', handle: '@MYAIPETS', verified: true,
+    created: '2023-03-19',
+    description: 'AI-powered pet-centric platform. Backed by @Ambergroup_io',
+    avatar: 'https://pbs.twimg.com/profile_images/2018693904162557952/TdKfvqUR_normal.jpg',
+    current: { followers: 59717, following: 15, posts: 150, media: 47, listed: 25, scrapedAt: '2026-05-28T14:20:00Z' },
+    history: [{ date: '2026-05-28', followers: 59717, following: 15, posts: 150, media: 47, listed: 25 }]
   };
 
-  function computeDerived() {
-    const days = Math.floor((Date.now() - REAL.created.getTime()) / 86400000);
-    return {
-      age:         days,
-      ratio:       (REAL.followers / REAL.following).toFixed(0),
-      postRate:    (REAL.posts / days).toFixed(2),
-      mediaRatio:  ((REAL.media / REAL.posts) * 100).toFixed(1),
-      growRate:    (REAL.followers / days).toFixed(1),
-      listedRatio: ((REAL.listed / REAL.followers) * 100).toFixed(3),
-    };
+  // ── 渲染所有數據 ──────────────────────────────────────────
+  function renderAll(data) {
+    const c = data.current;
+    const created = new Date(data.created);
+    const days = Math.floor((Date.now() - created.getTime()) / 86400000);
+
+    // KPI 卡片
+    set('val-followers', c.followers?.toLocaleString('zh-TW') ?? '—');
+    set('val-posts',     c.posts     ?? '—');
+    set('val-following', c.following ?? '—');
+    set('val-media',     c.media     ?? '—');
+    set('val-listed',    c.listed    ?? '—');
+    set('val-age',       days + ' 天');
+
+    // 計算指標
+    if (c.followers && c.following)
+      set('val-ratio', Math.round(c.followers / c.following).toLocaleString('zh-TW') + ' : 1');
+    if (c.posts)
+      set('val-postrate', (c.posts / days).toFixed(2) + ' 篇/天');
+    if (c.media && c.posts)
+      set('val-mediaratio', ((c.media / c.posts) * 100).toFixed(1) + '%');
+    if (c.followers)
+      set('val-growrate', (c.followers / days).toFixed(1) + ' 人/天');
+    if (c.listed && c.followers)
+      set('val-listedratio', ((c.listed / c.followers) * 100).toFixed(3) + '%');
+
+    // 最後同步時間
+    const synced = c.scrapedAt ? new Date(c.scrapedAt) : new Date();
+    set('syncTime', synced.toLocaleString('zh-TW', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }));
+
+    // 粉絲歷史圖表
+    renderGrowthChart(data.history || []);
+
+    // 每日變化
+    renderDeltaRow(data.history || []);
   }
 
-  function renderData() {
-    const d = computeDerived();
-    document.getElementById('val-followers').textContent = REAL.followers.toLocaleString('zh-TW');
-    document.getElementById('val-posts').textContent     = REAL.posts;
-    document.getElementById('val-following').textContent = REAL.following;
-    document.getElementById('val-media').textContent     = REAL.media;
-    document.getElementById('val-listed').textContent    = REAL.listed;
-    document.getElementById('val-age').textContent       = d.age + ' 天';
-    document.getElementById('val-ratio').textContent     = Number(d.ratio).toLocaleString('zh-TW') + ' : 1';
-    document.getElementById('val-postrate').textContent  = d.postRate + ' 篇/天';
-    document.getElementById('val-mediaratio').textContent= d.mediaRatio + '%';
-    document.getElementById('val-growrate').textContent  = d.growRate + ' 人/天';
-    document.getElementById('val-listedratio').textContent = d.listedRatio + '%';
-    document.getElementById('syncTime').textContent = new Date().toLocaleString('zh-TW', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
   }
 
-  function doRefresh() {
+  // ── 粉絲成長折線圖（只用真實歷史數據）────────────────────
+  function renderGrowthChart(history) {
+    const canvas = document.getElementById('growthChart');
+    if (!canvas || history.length < 2) {
+      const wrap = document.getElementById('growthChartWrap');
+      if (wrap) wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">數據累積中…目前只有 ' + history.length + ' 天記錄，明天起每天自動新增</div>';
+      return;
+    }
+    if (growthChart) growthChart.destroy();
+    const labels = history.map(h => h.date.slice(5)); // MM-DD
+    const values = history.map(h => h.followers);
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 200);
+    grad.addColorStop(0, 'rgba(99,102,241,0.35)');
+    grad.addColorStop(1, 'rgba(99,102,241,0.00)');
+    growthChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Followers',
+          data: values,
+          borderColor: '#6366f1',
+          borderWidth: 2.5,
+          tension: 0.4,
+          fill: true,
+          backgroundColor: grad,
+          pointRadius: history.length <= 14 ? 4 : 0,
+          pointBackgroundColor: '#6366f1',
+          pointHoverRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1c1f2e',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: c => ' Followers: ' + c.raw.toLocaleString('zh-TW'),
+              afterLabel: (c) => {
+                const idx = c.dataIndex;
+                if (idx === 0) return '';
+                const delta = values[idx] - values[idx - 1];
+                return ' 前一天: ' + (delta >= 0 ? '+' : '') + delta;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 11 } } },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { callback: v => v.toLocaleString('zh-TW'), font: { size: 11 } }
+          }
+        }
+      }
+    });
+  }
+
+  // ── 昨日 vs 今日粉絲變化 ─────────────────────────────────
+  function renderDeltaRow(history) {
+    const el = document.getElementById('deltaRow');
+    if (!el) return;
+    if (history.length < 2) {
+      el.innerHTML = '<span style="color:var(--muted);font-size:13px">數據累積中…明天起顯示每日變化</span>';
+      return;
+    }
+    const prev = history[history.length - 2];
+    const curr = history[history.length - 1];
+    const delta = curr.followers - prev.followers;
+    const sign  = delta >= 0 ? '+' : '';
+    const color = delta >= 0 ? '#10b981' : '#f43f5e';
+    el.innerHTML = `
+      <span style="color:var(--muted);font-size:13px">昨日 (${prev.date})：</span>
+      <strong style="font-size:15px">${prev.followers.toLocaleString('zh-TW')}</strong>
+      <span style="margin:0 8px;color:var(--faint)">→</span>
+      <span style="color:var(--muted);font-size:13px">今日 (${curr.date})：</span>
+      <strong style="font-size:15px">${curr.followers.toLocaleString('zh-TW')}</strong>
+      <span style="margin-left:10px;padding:3px 10px;border-radius:99px;background:${delta>=0?'rgba(16,185,129,.12)':'rgba(244,63,94,.12)'};color:${color};font-size:13px;font-weight:700">${sign}${delta.toLocaleString('zh-TW')}</span>
+    `;
+  }
+
+  // ── 手動重新整理（重新 fetch data.json）──────────────────
+  async function doRefresh() {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spin');
-    showToast('🔄 正在重新抓取 x.com/MYAIPETS 公開數據...');
-    setTimeout(() => {
-      btn.classList.remove('spin');
-      renderData();
-      showToast('✅ 公開數據已更新！（Followers: ' + REAL.followers.toLocaleString('zh-TW') + '）');
-    }, 1400);
+    showToast('🔄 重新載入最新數據...');
+    await loadData();
+    btn.classList.remove('spin');
+    showToast('✅ 數據已更新！');
   }
 
   function showToast(msg) {
@@ -564,7 +712,8 @@
     t._t = setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  renderData();
+  // ── 啟動 ──────────────────────────────────────────────────
+  loadData();
 </script>
 </body>
 </html>

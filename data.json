@@ -1,0 +1,27 @@
+{
+  "name": "My AI PET",
+  "handle": "@MYAIPETS",
+  "verified": true,
+  "created": "2023-03-19",
+  "description": "AI-powered pet-centric platform that combines advertising, content creation, and social engagement through a tokenized economy. Backed by @Ambergroup_io",
+  "avatar": "https://pbs.twimg.com/profile_images/2018693904162557952/TdKfvqUR_normal.jpg",
+  "banner": "https://pbs.twimg.com/profile_banners/1637318240786591744/1770129488",
+  "current": {
+    "followers": 59717,
+    "following": 15,
+    "posts": 150,
+    "media": 47,
+    "listed": 25,
+    "scrapedAt": "2026-05-28T14:20:00Z"
+  },
+  "history": [
+    {
+      "date": "2026-05-28",
+      "followers": 59717,
+      "following": 15,
+      "posts": 150,
+      "media": 47,
+      "listed": 25
+    }
+  ]
+}

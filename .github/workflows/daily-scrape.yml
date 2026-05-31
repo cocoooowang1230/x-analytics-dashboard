@@ -1,0 +1,45 @@
+name: Daily X Data Scraper
+
+on:
+  # 每天台灣時間早上 8:00 (UTC 00:00)
+  schedule:
+    - cron: '0 0 * * *'
+  # 也可以手動觸發
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允許寫入 repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: cd scraper && npm install
+
+      - name: Run scraper
+        run: node scraper/fetch.js
+
+      - name: Check if data changed
+        id: check_changes
+        run: |
+          git diff --quiet data.json || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --global user.name  "XPulse Bot"
+          git config --global user.email "bot@xpulse.auto"
+          git add data.json
+          git commit -m "data: auto-update @MYAIPETS stats $(date +'%Y-%m-%d')"
+          git push

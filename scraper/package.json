@@ -1,0 +1,8 @@
+{
+  "name": "xpulse-scraper",
+  "version": "1.0.0",
+  "description": "Daily scraper for @MYAIPETS X public data",
+  "main": "fetch.js",
+  "type": "module",
+  "dependencies": {}
+}
