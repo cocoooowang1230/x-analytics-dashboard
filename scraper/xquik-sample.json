@@ -1,0 +1,26 @@
+[
+  {
+    "id": "2019000000000000000",
+    "createdAt": "2026-05-28T14:20:00Z",
+    "text": "Sample Xquik export row for dashboard import testing.",
+    "url": "https://x.com/MYAIPETS/status/2019000000000000000",
+    "likeCount": 128,
+    "retweetCount": 18,
+    "replyCount": 7,
+    "bookmarkCount": 11,
+    "impressionCount": 9400
+  },
+  {
+    "id": "2019000000000000001",
+    "createdAt": "2026-05-29T14:20:00Z",
+    "text": "Second sample row with public engagement fields.",
+    "url": "https://x.com/MYAIPETS/status/2019000000000000001",
+    "metrics": {
+      "likes": 210,
+      "retweets": 31,
+      "replies": 9,
+      "bookmarks": 16,
+      "impressions": 13750
+    }
+  }
+]
