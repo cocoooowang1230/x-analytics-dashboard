@@ -1,5 +1,5 @@
 /**
- * XPulse Daily Scraper — @MYAIPETS
+ * XPulse Daily Scraper - @MYAIPETS
  * 抓取 x.com/MYAIPETS 公開頁面數據，儲存至 ../data.json
  * 由 GitHub Actions 每天自動執行
  */
@@ -7,6 +7,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+import { writeJsonFile } from './write-json-file.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = path.resolve(__dirname, '..', 'data.json');
@@ -123,7 +125,7 @@ function updateDataFile(scraped, userData) {
     history:     trimmed,
   };
 
-  fs.writeFileSync(DATA_FILE, JSON.stringify(updated, null, 2), 'utf8');
+  writeJsonFile(DATA_FILE, updated);
   console.log(`[完成] data.json 已更新，共 ${trimmed.length} 天歷史紀錄`);
   return updated;
 }
@@ -148,7 +150,7 @@ function logChanges(updated) {
     process.exit(0);
   } catch (err) {
     console.error('[錯誤]', err.message);
-    // 不讓整個 Action 失敗，只記錄錯誤
+    // 抓取失敗時讓 Action 失敗，避免靜默發布過期資料
     process.exit(1);
   }
 })();

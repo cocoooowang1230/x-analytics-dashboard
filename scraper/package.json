@@ -4,5 +4,10 @@
   "description": "Daily scraper for @MYAIPETS X public data",
   "main": "fetch.js",
   "type": "module",
+  "scripts": {
+    "scrape": "node fetch.js",
+    "import:xquik": "node import-xquik.js",
+    "test": "node --test"
+  },
   "dependencies": {}
 }
